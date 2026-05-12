@@ -15,6 +15,14 @@ docker-compose up -d grafana
 - UI en `http://<host>:3000`, usuario `admin` (cambiar contraseña).
 - Data source: InfluxDB configurado en URL `http://influxdb:8086`, token `my-token`.
 
+En grafana se debe configurar un dashboard para el correcto visualizado de los datos.
+Para configurarlo correctamente hay que especificar los siguientes datos:
+- Database: Flux
+- url: http://influxdb:8086
+- organzation: myorg
+- Token: my-token
+- bucket: sensordata
+
 ### Query
 
 from(bucket: "sensordata")
