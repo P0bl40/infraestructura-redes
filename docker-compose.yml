@@ -1,0 +1,81 @@
+services:
+  broker:
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt-broker
+    restart: always
+    ports:
+      - "1883:1883"
+      - "9001:9001"  
+    volumes:
+      - ./mqtt-broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - iot_net
+
+  middleware:
+    build: ./middleware
+    container_name: middleware 
+    restart: always
+    ports:
+      - "8080:8080" 
+    environment:
+      - MQTT_BROKER=broker
+      - MQTT_PORT=1883
+    depends_on:
+      - broker
+    networks:
+      - iot_net
+
+  influxdb:
+    image: influxdb:2.0
+    container_name: influxdb
+    restart: always
+    ports:
+      - "8086:8086"
+    environment:
+    - DOCKER_INFLUXDB_INIT_MODE=setup
+    - DOCKER_INFLUXDB_INIT_USERNAME=admin
+    - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+    - DOCKER_INFLUXDB_INIT_ORG=myorg
+    - DOCKER_INFLUXDB_INIT_BUCKET=sensordata
+    - DOCKER_INFLUXDB_INIT_RETENTION=168h   # 7 dias
+    - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-token
+    networks:
+      - iot_net
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - iot_net
+    depends_on:
+      - influxdb
+    
+  almacenamiento:
+    build: ./servicios/almacenamiento
+    container_name: almacenamiento
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - MQTT_BROKER=broker
+      - MQTT_PORT=1883
+      - INFLUX_URL=http://influxdb:8086
+      - INFLUX_TOKEN=my-token
+      - INFLUX_ORG=myorg
+      - INFLUX_BUCKET=sensordata
+    depends_on:
+      - broker
+      - influxdb
+    networks:
+      - iot_net
+    
+networks:
+  iot_net:
+
+volumes:
+  influxdb_data:
