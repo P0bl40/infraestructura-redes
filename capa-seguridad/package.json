@@ -1,0 +1,13 @@
+{
+  "name": "seguridad-iot",
+  "version": "1.0.0",
+  "description": "Protocolos de seguridad para el acceso al sistema",
+  "main": "src/index.js",
+  "scripts": {
+	  "start": "node src/index.js"
+  },
+  "dependencies": {
+	  "express": "^4.18.2",
+	  "http-proxy": "^1.18.1"
+  }
+}
