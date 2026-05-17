@@ -14,6 +14,6 @@ while true; do
   echo "Enviado sensorID=${sensorID} con temperatura=${temperature}"
   
   # intervalos de 2 segundos
-  sleep 1 
+  sleep 0.4 
 done
 

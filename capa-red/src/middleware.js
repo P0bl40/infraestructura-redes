@@ -2,6 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mqtt = require('mqtt');
 
+const TokenBucket = require('./token-bucket.js');
+
+const bucket = new TokenBucket(1, 3);
+
 function createMiddleware(port) {
 
 	const app = express();
@@ -32,6 +36,11 @@ function createMiddleware(port) {
 
 	  if (!sensorID || (!temperature && temperature !== 0)) {
 	    return res.status(400).json({ error: 'Faltan datos obligatorios (sensorID, temperature)' });
+	  }
+
+	  if (!bucket.tryConsume()){
+		  console.error('[Middleware] Error: demasiadas solicitudes, tickets agotados.');
+		  return res.status(429).json({ status: 'Demasiadad peticiones, prueba de nuevo luego' });
 	  }
 
 	  // Construir el tópico de publicación
