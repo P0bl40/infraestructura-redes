@@ -17,24 +17,30 @@ const client = mqtt.connect(`mqtt://${MQTT_BROKER}:${MQTT_PORT}`);
 
 client.on('connect', () => {
   console.log('Storage Service conectado a MQTT');
-  client.subscribe('sensors/+/temperature', { qos:1 });
+  client.subscribe('sensors/+/values', { qos:1 });
 });
 
 client.on('message', (topic, message) => {
   try {
     const data = JSON.parse(message.toString());
     const sensorID = data.sensorID;
-    const temp = parseFloat(data.temperature);
+    const temp = parseFloat(data.temperatura);
+    const hum = parseFloat(data.humedad);
+    const co2 = parseFloat(data.co2);
+    const cco = parseFloat(data.cco);
     const timestamp = new Date(data.timestamp);
 
-    const point = new Point('temperature')
+    const point = new Point('medicion')
       .tag('sensorID', sensorID)
-      .floatField('value', temp)
+      .floatField('temperatura', temp)
+      .floatField('humedad', hum)
+      .floatField('CO2', co2)
+      .floatField('compuestos combustibles', cco)
       .timestamp(timestamp);
 
     writeApi.writePoint(point);
     writeApi.flush();
-    console.log(`Guardado en Influx: sensor ${sensorID} → ${temp}`);
+    console.log(`Guardado en Influx: sensor ${sensorID} → Temp: ${temp}, Hum: ${hum}, CO2: ${co2}, Compuestos: ${cco}`);
   } catch (e) {
     console.error('Error procesando mensaje MQTT:', e);
   }

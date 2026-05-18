@@ -33,10 +33,23 @@ function createMiddleware(port) {
   
 	  // Ejemplo: Extraemos sensorID y la medición de temperatura (se debe extender a todas las variables)
 	  const sensorID = data.sensorID;
-	  const temperature = data.temperature || data.temp;
+	  const temperatura = data.temperatura || data.temp;
+	  const humedad = data.humedad;
+	  const co2 = data.co2;
+	  const cco = data.cco;
 
-	  if (!sensorID || (!temperature && temperature !== 0)) {
+	  if (!sensorID || (!temperatura && temperatura !== 0)) {
 	    return res.status(400).json({ error: 'Faltan datos obligatorios (sensorID, temperature)' });
+	  }
+	  if (!humedad) {
+	    return res.status(400).json({ error: 'Faltan datos de humedad' });
+	  }
+	  if (!co2) {
+	    return res.status(400).json({ error: 'Faltan datos de co2' });
+	  }
+
+	  if (!cco) {
+	    return res.status(400).json({ error: 'Faltan datos de compuestos combustibles organicos' });
 	  }
 
 	  if (!bucket.tryConsume()){
@@ -45,8 +58,8 @@ function createMiddleware(port) {
 	  }
 
 	  // Construir el tópico de publicación
-	  const topic = `sensors/${sensorID}/temperature`;
-	  const payload = JSON.stringify({ sensorID, temperature, timestamp: new Date().toISOString() });
+	  const topic = `sensors/${sensorID}/values`;
+	  const payload = JSON.stringify({ sensorID, temperatura, humedad, co2, cco, timestamp: new Date().toISOString() });
 	
 	  // Publicar en el broker MQTT
 	  mqttClient.publish(topic, payload, { qos: 1 }, (err) => {
