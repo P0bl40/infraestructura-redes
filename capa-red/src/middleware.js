@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const mqtt = require('mqtt');
 
 const TokenBucket = require('./token-bucket.js');
+const { enviarMensajeTlg } = require('./telegram-bot.js');
 
 const bucket = new TokenBucket(1, 3);
 
@@ -56,6 +57,8 @@ function createMiddleware(port) {
 	    console.log(`[Middleware] Datos del sensor ${sensorID} publicados en el tópico ${topic}`);
 	    return res.status(200).json({ message: 'Datos recibidos y enviados a MQTT' });
 	  });
+
+	  enviarMensajeTlg(`Datos del sensor ${sensorID} actualizados`);
 	});
 
 	//comprobacion salud haproxy
