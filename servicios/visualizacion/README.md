@@ -27,6 +27,9 @@ Para configurarlo correctamente hay que especificar los siguientes datos:
 
 from(bucket: "sensordata")
   |> range(start: -15m)
-  |> filter(fn: (r) => r._measurement == "temperature")
+  |> filter(fn: (r) => r._measurement == "medicion")
   |> filter(fn: (r) => exists r.sensorID)
-  |> keep(columns: ["_time", "_value", "sensorID"])
+  |> filter(fn: (r) => r._field == "temperatura" or r._field == "humedad" or r._field == "CO2" or r._field == "compuestos combustibles")
+  |> keep(columns: ["_time", "_field", "_value", "sensorID"])
+
+  Tambien hay que configurar opciones de visualización para poder ver correctamente los datos
