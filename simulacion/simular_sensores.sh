@@ -4,7 +4,7 @@
 
 while true; do
   # sensorID aleatorio
-  sensorID=$((RANDOM % 100 + 1))
+  sensorID=$((RANDOM % 21428 + 1))
   
   # temperatura 20 y 30 grados
   temperature=$(awk -v min=20 -v max=30 'BEGIN{srand(); printf "%.2f", min+rand()*(max-min)}')

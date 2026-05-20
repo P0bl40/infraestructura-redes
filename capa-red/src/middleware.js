@@ -11,6 +11,13 @@ function createMiddleware(port) {
 
 	const app = express();
 
+	const umbrales = {
+		temperatura: { min: 15, max: 30 },
+		humedad: { min: 30, max: 70 },
+		co2: { min: 300, max: 1000 },
+		cco: { min: 10, max: 50 }
+	};
+
 	// Middleware para parsear JSON
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
@@ -33,13 +40,16 @@ function createMiddleware(port) {
   
 	  // Ejemplo: Extraemos sensorID y la medición de temperatura (se debe extender a todas las variables)
 	  const sensorID = data.sensorID;
-	  const temperatura = data.temperatura || data.temp;
+	  const temperatura = data.temperatura;
 	  const humedad = data.humedad;
 	  const co2 = data.co2;
 	  const cco = data.cco;
 
-	  if (!sensorID || (!temperatura && temperatura !== 0)) {
-	    return res.status(400).json({ error: 'Faltan datos obligatorios (sensorID, temperature)' });
+	  if (!sensorID) {
+	    return res.status(400).json({ error: 'Falta el ID del sensor que envia datos' });
+	  }
+	  if (!temperatura) {
+	    return res.status(400).json({ error: 'Faltan datos de humedad' });
 	  }
 	  if (!humedad) {
 	    return res.status(400).json({ error: 'Faltan datos de humedad' });
@@ -71,7 +81,22 @@ function createMiddleware(port) {
 	    return res.status(200).json({ message: 'Datos recibidos y enviados a MQTT' });
 	  });
 
-	  enviarMensajeTlg(`Datos del sensor ${sensorID} actualizados`);
+	  if (temperatura < umbrales.temperatura.min || temperatura > umbrales.temperatura.max){
+	    enviarMensajeTlg(`El sensor ${sensorID} ha detectado una temperatura anormal: ${temperatura} ºC`);
+	  }
+
+	  if (humedad < umbrales.humedad.min || humedad > umbrales.humedad.max){
+	    enviarMensajeTlg(`El sensor ${sensorID} ha detectado una humedad anormal: ${humedad} %`);
+	  }
+
+	  if (co2 < umbrales.co2.min || co2 > umbrales.co2.max){
+	    enviarMensajeTlg(`El sensor ${sensorID} ha detectado un CO2 anormal: ${co2}`);
+	  }
+
+	  if (cco < umbrales.cco.min || cco > umbrales.cco.max){
+	    enviarMensajeTlg(`El sensor ${sensorID} ha detectado una concentración de compuestos combustibles organicos anormal: ${cco}`);
+	  }
+
 	});
 
 	//comprobacion salud haproxy
